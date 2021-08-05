@@ -175,14 +175,15 @@ async def record_responses(cassette, vcr_request, response):
     to the final destination.
     """
 
-    for past_response in response.history:
+    for i, past_response in enumerate(response.history):
         aiohttp_request = past_response.request_info
 
         # No data because it's following a redirect.
         past_request = Request(
             aiohttp_request.method,
             str(aiohttp_request.url),
-            None,
+            # Record body of first request, rest are following a redirect.
+            None if i else vcr_request.body,
             _serialize_headers(aiohttp_request.headers),
         )
         await record_response(cassette, past_request, past_response)
@@ -234,7 +235,7 @@ def vcr_request(cassette, real_request):
         headers = kwargs.get("headers")
         auth = kwargs.get("auth")
         headers = self._prepare_headers(headers)
-        data = kwargs.get("data", kwargs.get("json"))
+        data = kwargs.get("data") or kwargs.get("json")
         params = kwargs.get("params")
         cookies = kwargs.get("cookies")
 
