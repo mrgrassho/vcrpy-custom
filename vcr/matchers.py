@@ -75,7 +75,7 @@ _xmlrpc_header_checker = _header_checker("xmlrpc", header="User-Agent")
 _checker_transformer_pairs = (
     (
         _header_checker("application/x-www-form-urlencoded"),
-        lambda body: urllib.parse.parse_qs(body.decode("ascii")),
+        lambda body: urllib.parse.parse_qs(body.decode("ascii")) if not isinstance(body,dict) else body,
     ),
     (_header_checker("application/json"), _transform_json),
     (lambda request: _xml_header_checker(request) and _xmlrpc_header_checker(request), xmlrpc.client.loads),
