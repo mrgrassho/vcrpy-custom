@@ -9,7 +9,7 @@ import types
 import six
 
 from .cassette import Cassette
-from .serializers import yamlserializer, jsonserializer
+from .serializers import yamlserializer, jsonserializer, gzipserializer
 from .persisters.filesystem import FilesystemPersister
 from .util import compose, auto_decorate
 from .record_mode import RecordMode
@@ -54,7 +54,7 @@ class VCR:
         self.serializer = serializer
         self.match_on = match_on
         self.cassette_library_dir = cassette_library_dir
-        self.serializers = {"yaml": yamlserializer, "json": jsonserializer}
+        self.serializers = {"yaml": yamlserializer, "json": jsonserializer, "gzip": gzipserializer}
         self.matchers = {
             "method": matchers.method,
             "uri": matchers.uri,
