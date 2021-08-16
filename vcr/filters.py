@@ -3,6 +3,7 @@ from urllib.parse import urlparse, urlencode, urlunparse
 import copy
 import json
 import zlib
+import re
 
 from .util import CaseInsensitiveDict
 
@@ -15,8 +16,11 @@ def replace_headers(request, replacements):
     3. A callable which accepts (key, value, request) and returns a string value or None.
     """
     new_headers = request.headers.copy()
-    for k, rv in replacements:
-        if k in new_headers:
+    replacements = dict(replacements)
+    for exp, rv in replacements.items():
+        r = re.compile(exp)
+        filtered_list = list(filter(r.match, new_headers))
+        for k in filtered_list:
             ov = new_headers.pop(k)
             if callable(rv):
                 rv = rv(key=k, value=ov, request=request)
@@ -46,15 +50,20 @@ def replace_query_parameters(request, replacements):
     query = request.query
     new_query = []
     replacements = dict(replacements)
+    new_values = dict()
     for k, ov in query:
-        if k not in replacements:
-            new_query.append((k, ov))
-        else:
-            rv = replacements[k]
-            if callable(rv):
-                rv = rv(key=k, value=ov, request=request)
-            if rv is not None:
-                new_query.append((k, rv))
+        for exp, rv in replacements.items():
+            r = re.compile(exp)
+            filtered_list = list(filter(r.match, [q[0] for q in query]))
+            if k not in filtered_list:
+                new_values[k] = ov
+            else:
+                if callable(rv):
+                    rv = rv(key=k, value=ov, request=request)
+                if rv is not None:
+                    new_values[k] = rv
+    for k, v in new_values.items():
+        new_query.append((k, v))
     uri_parts = list(urlparse(request.uri))
     uri_parts[4] = urlencode(new_query)
     request.uri = urlunparse(uri_parts)
@@ -86,8 +95,10 @@ def replace_post_data_parameters(request, replacements):
     if request.method == "POST" and not isinstance(request.body, BytesIO):
         if isinstance(request.body, dict):
             new_body = request.body.copy()
-            for k, rv in replacements.items():
-                if k in new_body:
+            for exp, rv in replacements.items():
+                r = re.compile(exp)
+                filtered_list = list(filter(r.match, new_body.keys()))
+                for k in filtered_list:
                     ov = new_body.pop(k)
                     if callable(rv):
                         rv = rv(key=k, value=ov, request=request)
@@ -98,8 +109,10 @@ def replace_post_data_parameters(request, replacements):
             pass # Ignore filter in list type
         elif request.headers.get("Content-Type") == "application/json":
             json_data = json.loads(request.body.decode("utf-8"))
-            for k, rv in replacements.items():
-                if k in json_data:
+            for exp, rv in replacements.items():
+                r = re.compile(exp)
+                filtered_list = list(filter(r.match, json_data.keys()))
+                for k in filtered_list:
                     ov = json_data.pop(k)
                     if callable(rv):
                         rv = rv(key=k, value=ov, request=request)
