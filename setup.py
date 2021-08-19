@@ -62,6 +62,9 @@ setup(
     packages=find_packages(exclude=["tests*"]),
     python_requires=">=3.5",
     install_requires=install_requires,
+    entry_points={
+        'console_scripts': ['yaml_2_gzip=tools.yaml_2_gzip:main'],
+    },
     license="MIT",
     tests_require=["pytest", "mock", "pytest-httpbin"],
     classifiers=[
