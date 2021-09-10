@@ -37,7 +37,7 @@ def query(r1, r2):
 
 
 def raw_body(r1, r2):
-    assert read_body(r1) == read_body(r2)
+    assert read_body(r1) == read_body(r2),  "{} != {}".format(read_body(r1), read_body(r2))
 
 
 def body(r1, r2):
@@ -45,8 +45,9 @@ def body(r1, r2):
     r2_transformer = _get_transformer(r2)
     if transformer != r2_transformer:
         transformer = _identity
-    assert transformer(read_body(r1)) == transformer(read_body(r2))
-
+    a = transformer(read_body(r1))
+    b = transformer(read_body(r2))
+    assert a == b, "{} != {}".format(a, b)
 
 def headers(r1, r2):
     assert r1.headers == r2.headers, "{} != {}".format(r1.headers, r2.headers)

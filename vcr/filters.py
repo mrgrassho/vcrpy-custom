@@ -51,17 +51,22 @@ def replace_query_parameters(request, replacements):
     new_query = []
     replacements = dict(replacements)
     new_values = dict()
+    filtered = {}
+    for exp, rv in replacements.items():
+        r = re.compile(exp)
+        items = list(filter(r.match, [q[0] for q in query]))
+        if items:
+            item = items[0]
+            filtered[item] = rv
     for k, ov in query:
-        for exp, rv in replacements.items():
-            r = re.compile(exp)
-            filtered_list = list(filter(r.match, [q[0] for q in query]))
-            if k not in filtered_list:
-                new_values[k] = ov
-            else:
-                if callable(rv):
-                    rv = rv(key=k, value=ov, request=request)
-                if rv is not None:
-                    new_values[k] = rv
+        if k not in filtered.keys():
+            new_values[k] = ov
+        else:
+            rv = filtered[k]
+            if callable(rv):
+                rv = rv(key=k, value=ov, request=request)
+            if rv is not None:
+                new_values[k] = rv
     for k, v in new_values.items():
         new_query.append((k, v))
     uri_parts = list(urlparse(request.uri))
@@ -95,6 +100,7 @@ def replace_post_data_parameters(request, replacements):
     if request.method == "POST" and not isinstance(request.body, BytesIO):
         if isinstance(request.body, dict):
             new_body = request.body.copy()
+            new_body.pop(None, None)
             for exp, rv in replacements.items():
                 r = re.compile(exp)
                 filtered_list = list(filter(r.match, new_body.keys()))
@@ -109,6 +115,7 @@ def replace_post_data_parameters(request, replacements):
             pass # Ignore filter in list type
         elif request.headers.get("Content-Type") == "application/json":
             json_data = json.loads(request.body.decode("utf-8"))
+            json_data.pop(None, None)
             for exp, rv in replacements.items():
                 r = re.compile(exp)
                 filtered_list = list(filter(r.match, json_data.keys()))
