@@ -66,6 +66,7 @@ setup(
         'console_scripts': [
             'yaml_2_gzip=tools.yaml_2_gzip:main',
             'gzip_2_yaml=tools.gzip_2_yaml:main',
+            'vcr_check_format=tools.check_format:main',
         ],
     },
     license="MIT",

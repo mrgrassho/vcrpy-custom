@@ -28,11 +28,11 @@ def scan(dir_in, dir_out):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('IN', help='Input directory')
-    parser.add_argument('OUT', help='Output directory')
+    parser.add_argument('IN', help='Input directory with cassettes.')
+    parser.add_argument('OUT', help='Output directory.')
     args = parser.parse_args()
     scan(args.IN, args.OUT)
-    
+
 
 if __name__ == "__main__":
     main()

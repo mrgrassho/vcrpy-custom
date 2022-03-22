@@ -32,7 +32,7 @@ def main():
     parser.add_argument('OUT', help='Output directory')
     args = parser.parse_args()
     scan(args.IN, args.OUT)
-    
+
 
 if __name__ == "__main__":
     main()
